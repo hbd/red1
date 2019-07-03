@@ -1,0 +1,3 @@
+.pg_*
+.psql_history
+.bash_history
