@@ -1,0 +1,82 @@
+-- Running Postgres w/ Docker
+```
+# Run postgres docker container as daemon, then connect to it from a different container running psql
+docker run --rm --name euc_pg -d postgres:latest
+
+docker run -it --rm --link euc_pg:postgres postgres psql -h postgres -U postgres
+```
+
+Result:
+```
+❯ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
+ab90fc8ac6fc        postgres            "docker-entrypoint.s…"   16 minutes ago      Up About a minute   5432/tcp            dreamy_almeida
+1d2504140056        postgres:latest     "docker-entrypoint.s…"   17 minutes ago      Up 2 minutes        5432/tcp            euc_pg
+```
+
+# nextval() function, the sequence relation and screwing with primary keys
+Create a new table with an 'id' col as primary key
+```
+create table ... ( id serial primaruy key, ...);`
+\d
+red1=# \d
+List of relations
+-[ RECORD 1 ]------------------
+Schema | public
+Name   | master_plan
+Type   | table
+Owner  | postgres
+-[ RECORD 3 ]------------------
+Schema | public
+Name   | master_plan_id_seq
+Type   | sequence
+Owner  | postgres
+-[ RECORD 3 ]------------------
+Schema | public
+Name   | master_plan_id_seq
+Type   | sequence
+Owner  | postgres
+```
+create a new sequence (a "relation", which is a type of pg object?)
+```
+red1=# create sequence master_plan_alt_id_seq;
+CREATE SEQUENCE
+```
+set the sequence as the new default for the existing id col
+```
+red1=# alter table master_plan alter COLUMN id set default nextval('master_plan_alt_id_seq');
+ALTER TABLE
+```
+if you try to insert now into that table, and the new id from the new sequence conflicts with the next int in the old sequence, then you can
+manually increment the new sequence by calling the nextval() func on the new sequence
+```
+select nextval('master_plan_alt_id_seq');
+```
+
+Postgres hierarchy
+
+0) cluster (usually 1?)
+1) database
+2) schema (default: 'public')
+3) tables, view, function, other relations (all attached to a schema)
+
+
+Importing data into postgres when using a docker container setup...
+
+As noted before, one docker container runs the postgres server, while the other container links to the server container
+and runs psql (server and client containers).
+
+`docker run -it --rm -v ${PWD}:/root --link euc_pg:postgres postgres bash` is used to start psql in the *client* container
+But the *server* running must first be started with:
+`docker run --rm -v ${PWD}:/root --name euc_pg -d postgres:latest`
+
+When importing data, the data must exist on the *server container*, not the client container, thus the
+`-v ${PWD}:/root` in the cmd to run the server container (used in the client container command for accessing the `import.sql`
+file that contains the SQL for importing copying the data, e.g.
+
+``` sql
+COPY import.master_plan
+  FROM '/root/csv/master_plan.csv' -- PG doesn't assume format, so specify which delimiter to use.
+  WITH DELIMITER ',' HEADER CSV;
+```
+'/root/csv/master_plan.csv' must exist *on the server* container
