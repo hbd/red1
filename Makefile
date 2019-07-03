@@ -25,6 +25,8 @@ psql: .pg_migrate
 bash: .pg_start
 	${PG_CLIENT_CMD} bash
 
+start: .pg_migrate
+
 # Perform migrations.
 .pg_migrate: .pg_start
 	@for mgf in $(shell echo "ls /root/sql/" | ${PG_ROOT_CMD} bash); do \

@@ -16,6 +16,6 @@ CREATE TABLE import.master_plan (
 );
 COPY import.master_plan
   FROM '/root/csv/master_plan.csv' -- PG doesn't assume format, so specify which delimiter to use.
-  WITH DELIMITER ','; -- HEADER CSV;
+  WITH DELIMITER ',' HEADER CSV; -- HEADER CSV;
 
 -- start_time_utc,duration,team,spass_time,target,request_name,library_definition,title,description,
