@@ -2,4 +2,5 @@
 .psql_history
 .bash_history
 
-csv/
+csv/*
+!csv/master_plan_test.csv
