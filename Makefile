@@ -17,6 +17,8 @@ clean:
 	@docker stop ${PG_SERVER} || true
 	@rm -rf .pg_start .pg_migrate
 
+.PHONY: psql bash
+
 psql: .pg_migrate
 	${PG_CLIENT_CMD} psql -h postgres -U postgres
 
