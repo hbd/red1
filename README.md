@@ -1,4 +1,4 @@
-# Red1 Project
+# Red1: Cassini Missions - PostgreSQL
 
 This project contains code for playing around with data retrieved from the [NASA Cassini Missions](http://archive.redfour.io/cassini/cassini_data.zip) using PostgreSQL.
 
